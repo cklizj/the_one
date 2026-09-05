@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+dist/
+*.egg-info/
+
+# throwaway demo db (practice.db is intentionally TRACKED and synced)
+demo.db
+demo.db-journal
+
+# sqlite transient files
+*.db-wal
+*.db-shm
+*.db-journal
