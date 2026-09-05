@@ -47,7 +47,31 @@ uv sync
 uv run practice --help
 ```
 
-DB defaults to `~/.practice/practice.db`; override with `--db <path>` or `$PRACTICE_DB`.
+DB lives at `./practice.db` inside the repo and is **tracked in git**; override with
+`--db <path>` or `$PRACTICE_DB` (then it is NOT synced).
+
+## Git sync
+
+Single-user, CLI-first design: the SQLite DB is versioned in the same repo, so you
+can work from any clone and the data follows.
+
+- **On every run:** `git pull --rebase --autostash` first.
+- **After every write** (`add`, `edit`, `attempt`, `tag rename`, `seed-demo`): the
+  change is committed as `practice: ...` and pushed to `origin`.
+- Fails softly: offline or no remote just warns; the command still runs.
+
+Publish to GitHub once (from inside the repo):
+
+```sh
+# 1. install GitHub CLI (one-time): https://cli.github.com
+# 2. authenticate (one-time):
+gh auth login
+# 3. create a private repo + push:
+uv run practice publish [--name practice-tracker] [--public]
+```
+
+After that, clone it anywhere and `uv run practice ...` on each machine keeps the
+same data (single user at a time).
 
 ## Usage (current slice)
 
