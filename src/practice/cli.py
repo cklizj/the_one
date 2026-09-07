@@ -399,6 +399,18 @@ def _render_items(items: list[dict]) -> None:
 _RATING_LABELS = {"again": "AGAIN", "hard": "HARD", "good": "GOOD", "easy": "EASY"}
 
 
+def _resolve_code(code: str) -> str:
+    """If `code` points at an existing file, return its contents; otherwise return as-is."""
+    if "\n" not in code:
+        p = Path(code).expanduser()
+        if p.is_file():
+            try:
+                return p.read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                pass
+    return code
+
+
 def _render_item_detail(item: dict) -> None:
     typer.echo(f"[Item #{item['id']}] {item['title']}")
     typer.echo(f"  domain   : {item['domain'] or '-'}")
@@ -429,7 +441,8 @@ def _render_item_detail(item: dict) -> None:
 
     if item.get("code"):
         typer.echo("\n  Code:")
-        for line in item["code"].splitlines():
+        code_text = _resolve_code(item["code"])
+        for line in code_text.splitlines():
             typer.echo(f"    {line}")
 
     related = item["related_list"]
