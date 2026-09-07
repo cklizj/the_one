@@ -319,6 +319,15 @@ def update_item(
     return True
 
 
+def delete_item(conn: sqlite3.Connection, item_id: int) -> bool:
+    """Delete an item and its cascade rows (attempts, item_tags). Returns False if missing."""
+    if conn.execute("SELECT 1 FROM items WHERE id = ?", (item_id,)).fetchone() is None:
+        return False
+    conn.execute("DELETE FROM items WHERE id = ?", (item_id,))
+    conn.commit()
+    return True
+
+
 def list_tags(conn: sqlite3.Connection) -> list[dict]:
     rows = conn.execute(
         "SELECT t.id, t.name, COUNT(it.item_id) AS item_count "

@@ -83,6 +83,18 @@ def test_update_item_missing_item(conn):
     assert db.update_item(conn, 999, title="x") is False
 
 
+def test_delete_item_removes_cascade_rows(item_id, conn):
+    db.insert_attempt(conn, item_id=item_id, rating="good", reflection="ok")
+    assert db.delete_item(conn, item_id) is True
+    assert db.get_item(conn, item_id) is None
+    assert conn.execute("SELECT COUNT(*) FROM attempts WHERE item_id = ?", (item_id,)).fetchone()[0] == 0
+    assert conn.execute("SELECT COUNT(*) FROM item_tags WHERE item_id = ?", (item_id,)).fetchone()[0] == 0
+
+
+def test_delete_item_missing(conn):
+    assert db.delete_item(conn, 999) is False
+
+
 def test_search_matches_approach_and_related(item_id, conn):
     assert [i["id"] for i in db.search_items(conn, query="recursively")] == [item_id]
     assert [i["id"] for i in db.search_items(conn, query="sparse-table")] == [item_id]

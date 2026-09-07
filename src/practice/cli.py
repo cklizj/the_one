@@ -83,6 +83,13 @@ _EX_EDIT = """
   [green]practice[/green] edit 3 --clean notes                     [bright_black](clears notes)[/bright_black]
 """
 
+_EX_DELETE = """
+[yellow]Examples:[/yellow]
+
+  [green]practice[/green] delete 3                  [bright_black]confirm, then delete item #3[/bright_black]
+  [green]practice[/green] delete 3 --force          [bright_black]delete without prompting[/bright_black]
+"""
+
 _EX_TIPS = """
 [yellow]Example:[/yellow]
 
@@ -585,6 +592,33 @@ def edit(
             raise typer.Exit(code=1)
     typer.echo(f"Updated item #{item_id}.")
     _after_write(f"edit item #{item_id}")
+
+
+@app.command(
+    "delete",
+    help="Delete an item by id (permanently, including its attempts and tags).",
+    rich_help_panel="Items",
+    epilog=_EX_DELETE,
+)
+def delete(
+    ctx: typer.Context,
+    item_id: int = typer.Argument(help="Item id to delete (see `practice list`)."),
+    force: bool = typer.Option(False, "--force", "-f", help="Skip the confirmation prompt."),
+) -> None:
+    item = db.get_item(_conn(ctx), item_id)
+    if item is None:
+        typer.echo(f"No item with id {item_id}.", err=True)
+        raise typer.Exit(code=1)
+    if not force:
+        n = item["attempt_count"]
+        hint = f" ({n} attempt{'s' if n != 1 else ''})" if n else ""
+        typer.echo(f"Delete item #{item_id}: {item['title']}{hint}?")
+        if not typer.confirm("Continue?"):
+            typer.echo("Aborted.")
+            raise typer.Exit()
+    db.delete_item(_conn(ctx), item_id)
+    typer.echo(f"Deleted item #{item_id}: {item['title']}")
+    _after_write(f"delete item #{item_id}: {item['title'][:60]}")
 
 
 @app.command(
