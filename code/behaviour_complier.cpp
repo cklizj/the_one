@@ -4,7 +4,9 @@ char c = 200;                   // implementation-defined:
                                  // signed/unsigned char depends on compiler,
                                  // but compiler must document it
 
-int x = f1() + f2();            // unspecified: eval order of f1/f2
+int x = f1() + f2();            // unspecified: order of f1/f2
+                                // for example if there is a cout in f1 and f2
+                                // it is computed f1 first or f2?
                                  // not fixed, no docs required
 
 int y = INT_MAX; y = y + 1;     // UB: signed overflow, anything can happen
